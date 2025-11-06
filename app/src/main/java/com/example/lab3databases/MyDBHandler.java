@@ -12,7 +12,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
     private static final String COLUMN_PRODUCT_NAME = "name";
     private static final String COLUMN_PRODUCT_PRICE = "price";
     private static final String DATABASE_NAME = "products.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 3;
 
     public MyDBHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -21,7 +21,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String create_table_cmd = "CREATE TABLE " + TABLE_NAME +
-                "(" + COLUMN_ID + "INTEGER PRIMARY KEY, " +
+                " (" + COLUMN_ID + " INTEGER PRIMARY KEY, " +
                 COLUMN_PRODUCT_NAME + " TEXT, " +
                 COLUMN_PRODUCT_PRICE + " DOUBLE " + ")";
 
@@ -51,28 +51,43 @@ public class MyDBHandler extends SQLiteOpenHelper {
         db.insert(TABLE_NAME, null, values);
         db.close();
     }
-    public void findProduct(Product product) {
+    public Product findProduct(Product product) {
+        SQLiteDatabase db = this.getReadableDatabase();
 
-    }
-    public int deleteProduct(Product product) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + COLUMN_PRODUCT_NAME + " = \"" + product.getProductName() + "\"";
+        Cursor cursor = db.rawQuery(query, null);
 
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_PRODUCT_NAME, product.getProductName());
+        Product result;
 
-        String name = values.getAsString(COLUMN_PRODUCT_NAME);
-        if (name == null || name.trim().isEmpty()) {
-            db.close();
-            return 0;
+        if (cursor.moveToFirst()) {
+            result = new Product();
+            result.setId(Integer.parseInt(cursor.getString(0)));
+            result.setProductName(cursor.getString(1));
+            result.setProductPrice(Double.parseDouble(cursor.getString(2)));
+        } else {
+            result = null;
         }
 
-        int rows = db.delete(
-                TABLE_NAME,
-                COLUMN_PRODUCT_NAME + " = ? COLLATE NOCASE",
-                new String[]{ name.trim() }
-        );
-
-        db.close();
-        return rows;
+        cursor.close();
+        return result;
     }
+
+    public boolean deleteProduct(Product product) {
+        boolean result = false;
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + COLUMN_PRODUCT_NAME + " = \"" + product.getProductName() + "\"";
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            String idStr = cursor.getString(0); // id
+            db.delete(TABLE_NAME, COLUMN_ID + " = " + idStr, null);
+            result = true;
+        }
+
+        cursor.close();
+        db.close();
+        return result;
+    }
+
 }

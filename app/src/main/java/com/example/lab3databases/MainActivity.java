@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
         // db handler
         dbHandler = new MyDBHandler(this);
 
+        viewProducts();
+
         // button listeners
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,7 +69,24 @@ public class MainActivity extends AppCompatActivity {
         findBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Find product", Toast.LENGTH_SHORT).show();
+                String name = productName.getText().toString().trim();
+                if (name.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Enter a product name", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Product query = new Product();
+                query.setProductName(name);
+
+                Product found = dbHandler.findProduct(query);
+                if (found != null) {
+                    productId.setText(String.valueOf(found.getId()));
+                    productName.setText(found.getProductName());
+                    productPrice.setText(String.valueOf(found.getProductPrice()));
+                    Toast.makeText(MainActivity.this, "Found", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Not found", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -76,23 +95,25 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String name = productName.getText().toString().trim();
                 if (name.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Enter product name to delete", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Enter a product name", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                Product product = new Product();
-                product.setProductName(name);
+                Product query = new Product();
+                query.setProductName(name);
 
-                Toast.makeText(MainActivity.this, "Deleted " + name, Toast.LENGTH_SHORT).show();
-
-                productName.setText("");
-                productPrice.setText("");
-                viewProducts();
+                boolean deleted = dbHandler.deleteProduct(query);
+                if (deleted) {
+                    Toast.makeText(MainActivity.this, "Deleted", Toast.LENGTH_SHORT).show();
+                    productId.setText("");
+                    productName.setText("");
+                    productPrice.setText("");
+                    viewProducts();
+                } else {
+                    Toast.makeText(MainActivity.this, "No match to delete", Toast.LENGTH_SHORT).show();
+                }
             }
         });
-
-
-        viewProducts();
     }
 
     private void viewProducts() {
@@ -106,7 +127,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        cursor.close();
+
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, productList);
         productListView.setAdapter(adapter);
     }
 }
+
