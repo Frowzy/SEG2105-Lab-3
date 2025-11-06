@@ -3,6 +3,11 @@ plugins {
 }
 
 android {
+    namespace "com.example.lab3databases"
+}
+
+
+android {
     compileSdk 31
 
     defaultConfig {

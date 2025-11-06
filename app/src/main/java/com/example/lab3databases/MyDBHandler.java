@@ -51,4 +51,28 @@ public class MyDBHandler extends SQLiteOpenHelper {
         db.insert(TABLE_NAME, null, values);
         db.close();
     }
+    public void findProduct(Product product) {
+
+    }
+    public int deleteProduct(Product product) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_PRODUCT_NAME, product.getProductName());
+
+        String name = values.getAsString(COLUMN_PRODUCT_NAME);
+        if (name == null || name.trim().isEmpty()) {
+            db.close();
+            return 0;
+        }
+
+        int rows = db.delete(
+                TABLE_NAME,
+                COLUMN_PRODUCT_NAME + " = ? COLLATE NOCASE",
+                new String[]{ name.trim() }
+        );
+
+        db.close();
+        return rows;
+    }
 }
