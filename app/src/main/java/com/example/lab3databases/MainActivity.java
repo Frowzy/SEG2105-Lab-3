@@ -70,13 +70,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String name = productName.getText().toString().trim();
-                if (name.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Enter a product name", Toast.LENGTH_SHORT).show();
+                String priceText = productPrice.getText().toString().trim();
+
+                if (name.isEmpty() && priceText.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Enter a product name or price", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
                 Product query = new Product();
-                query.setProductName(name);
+
+                if (!name.isEmpty()) {
+                    query.setProductName(name);
+                }
+
+                if (!priceText.isEmpty()) {
+                    query.setProductPrice(Double.parseDouble(priceText));
+                }
 
                 Product found = dbHandler.findProduct(query);
                 if (found != null) {

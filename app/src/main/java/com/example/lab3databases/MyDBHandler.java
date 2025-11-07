@@ -54,7 +54,14 @@ public class MyDBHandler extends SQLiteOpenHelper {
     public Product findProduct(Product product) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + COLUMN_PRODUCT_NAME + " = \"" + product.getProductName() + "\"";
+        String query;
+
+        if (product.getProductName() == null || product.getProductName().isEmpty()) {
+            query = "SELECT * FROM " + TABLE_NAME + " WHERE " + COLUMN_PRODUCT_PRICE + " = " + product.getProductPrice();
+        } else {
+            query = "SELECT * FROM " + TABLE_NAME + " WHERE " + COLUMN_PRODUCT_NAME + " = \"" + product.getProductName() + "\"";
+        }
+
         Cursor cursor = db.rawQuery(query, null);
 
         Product result;
